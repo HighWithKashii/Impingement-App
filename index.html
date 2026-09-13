@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Schulter-Reha Tracker</title>
+  <meta name="description" content="Trainingsplan-Tracker für Schulter-Reha & Aufbau (Impingement)" />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-header-row">
+      <h1 class="app-title">Schulter-Reha</h1>
+      <button id="install-btn" class="btn btn-ghost" hidden>Installieren</button>
+    </div>
+    <div id="phase-bar" class="phase-bar"></div>
+  </header>
+
+  <main id="view" class="view"></main>
+
+  <nav class="tab-bar" id="tab-bar">
+    <button class="tab-btn is-active" data-tab="woche">
+      <span class="tab-icon" aria-hidden="true">&#9679;</span>
+      <span>Woche</span>
+    </button>
+    <button class="tab-btn" data-tab="verlauf">
+      <span class="tab-icon" aria-hidden="true">&#9651;</span>
+      <span>Verlauf</span>
+    </button>
+    <button class="tab-btn" data-tab="bearbeiten">
+      <span class="tab-icon" aria-hidden="true">&#9998;</span>
+      <span>Plan</span>
+    </button>
+  </nav>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
