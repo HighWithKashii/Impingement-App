@@ -9,10 +9,10 @@ import math
 import os
 from PIL import Image, ImageDraw
 
-BG = (11, 18, 32, 255)  # --bg
-TEAL = (45, 212, 191, 255)  # --primary
-TEAL_DARK = (20, 184, 166, 255)
-AMBER = (245, 158, 11, 255)
+BG = (10, 10, 11, 255)  # --bg
+ACCENT = (255, 138, 31, 255)  # --accent
+ACCENT_STRONG = (255, 106, 0, 255)  # --accent-strong
+AMBER = (255, 214, 130, 255)  # lighter highlight tone
 
 OUT_DIR = os.path.join(os.path.dirname(__file__), "..", "icons")
 
@@ -30,21 +30,21 @@ def draw_mark(img, cx, cy, r, stroke):
     # Arc representing rotational range of motion (shoulder rotation cuff),
     # from -210° to 30° (a 240° open arc).
     bbox = [cx - r, cy - r, cx + r, cy + r]
-    draw.arc(bbox, start=150, end=390, fill=TEAL, width=stroke)
+    draw.arc(bbox, start=150, end=390, fill=ACCENT, width=stroke)
 
-    # amber dot at the arc's start point (progress marker)
+    # bright highlight dot at the arc's start point (progress marker)
     start_angle = math.radians(150)
     dot_r = stroke * 0.85
     dx = cx + r * math.cos(start_angle)
     dy = cy + r * math.sin(start_angle)
     draw.ellipse([dx - dot_r, dy - dot_r, dx + dot_r, dy + dot_r], fill=AMBER)
 
-    # small teal dot at the arc's end point
+    # darker accent dot at the arc's end point
     end_angle = math.radians(390)
     ex = cx + r * math.cos(end_angle)
     ey = cy + r * math.sin(end_angle)
     dot_r2 = stroke * 0.6
-    draw.ellipse([ex - dot_r2, ey - dot_r2, ex + dot_r2, ey + dot_r2], fill=TEAL_DARK)
+    draw.ellipse([ex - dot_r2, ey - dot_r2, ex + dot_r2, ey + dot_r2], fill=ACCENT_STRONG)
 
 
 def make_icon(size, radius_ratio, mark_scale, path):

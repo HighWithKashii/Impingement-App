@@ -1,5 +1,9 @@
 // Integration mit der öffentlichen wger.de API, um passende Trainingsbilder
 // zu Übungsnamen zu finden. Läuft nur im Browser des Nutzers (nicht offline).
+//
+// Die wger-API hat über die Zeit Feldnamen geändert (z.B. exercise_base -> exercise).
+// Deshalb wird hier bewusst defensiv geparst und mit mehreren Parameter-Varianten
+// versucht, statt sich auf ein einzelnes starres Schema zu verlassen.
 
 import { getCachedImage, setCachedImage } from "./storage.js";
 
@@ -27,16 +31,17 @@ export async function findExerciseImage(query) {
 }
 
 async function lookupImage(query) {
-  const searchRes = await fetch(
-    `${SEARCH_URL}?term=${encodeURIComponent(query)}&language=english&format=json`
+  const searchData = await fetchJSON(
+    `${SEARCH_URL}?term=${encodeURIComponent(query)}&language=en&format=json`
   );
-  if (!searchRes.ok) throw new Error(`Suche fehlgeschlagen: ${searchRes.status}`);
-  const searchData = await searchRes.json();
-  const suggestions = searchData.suggestions ?? [];
-  if (suggestions.length === 0) return null;
+  const suggestions = searchData?.suggestions ?? (Array.isArray(searchData) ? searchData : []);
+  if (suggestions.length === 0) {
+    console.debug("wger: keine Suggestions für", query, searchData);
+    return null;
+  }
 
   for (const suggestion of suggestions.slice(0, 5)) {
-    const data = suggestion.data ?? {};
+    const data = suggestion.data ?? suggestion ?? {};
     const exerciseName = suggestion.value ?? data.name ?? query;
 
     // Manche Antworten liefern direkt ein Bild mit dem Suchtreffer.
@@ -44,24 +49,44 @@ async function lookupImage(query) {
       return { imageUrl: absoluteUrl(data.image), exerciseName };
     }
 
-    const baseId = data.base_id ?? data.id ?? data.exercise_base;
-    if (!baseId) continue;
+    // Die wger-API hat den Feldnamen für die Übungs-ID über verschiedene
+    // Versionen hinweg geändert - alle bekannten Varianten durchprobieren.
+    const candidateIds = [data.base_id, data.exercise_base, data.id, data.exercise].filter(
+      (v) => v !== undefined && v !== null
+    );
 
-    const image = await fetchImageForBase(baseId);
-    if (image) return { imageUrl: absoluteUrl(image), exerciseName };
+    for (const id of candidateIds) {
+      const image = await fetchImageForId(id);
+      if (image) return { imageUrl: absoluteUrl(image), exerciseName };
+    }
   }
 
   return null;
 }
 
-async function fetchImageForBase(baseId) {
-  const res = await fetch(`${IMAGE_URL}?exercise_base=${baseId}&format=json`);
-  if (!res.ok) return null;
-  const data = await res.json();
-  const results = data.results ?? [];
-  if (results.length === 0) return null;
-  const main = results.find((r) => r.is_main) ?? results[0];
-  return main.image ?? null;
+async function fetchImageForId(id) {
+  // Je nach API-Version heißt der Filterparameter "exercise_base" oder "exercise".
+  for (const param of ["exercise", "exercise_base"]) {
+    try {
+      const data = await fetchJSON(`${IMAGE_URL}?${param}=${id}&format=json`);
+      const results = data?.results ?? [];
+      if (results.length === 0) continue;
+      const main = results.find((r) => r.is_main) ?? results[0];
+      if (main?.image) return main.image;
+    } catch (e) {
+      console.debug("wger: Bildabfrage fehlgeschlagen für", param, id, e);
+    }
+  }
+  return null;
+}
+
+async function fetchJSON(url) {
+  const res = await fetch(url);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`wger-Anfrage fehlgeschlagen (${res.status}): ${url} ${body.slice(0, 200)}`);
+  }
+  return res.json();
 }
 
 function absoluteUrl(url) {

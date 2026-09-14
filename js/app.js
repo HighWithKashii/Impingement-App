@@ -9,6 +9,7 @@ import {
   setWeekEntry,
   isoWeekKey,
   addOrUpdateHistoryEntry,
+  getHistory,
   getHistoryForExercise,
   todayISO,
 } from "./storage.js";
@@ -16,8 +17,9 @@ import { findExerciseImage } from "./wger.js";
 import { drawWeightChart } from "./charts.js";
 
 let plan = getPlan();
-let activeTab = "woche";
+let activeTab = "home";
 let historyExerciseId = null;
+let highlightSessionId = null;
 let editorPhaseId = getCurrentPhaseId();
 let editorSessionId = plan.phases.find((p) => p.id === editorPhaseId)?.sessions[0].id;
 
@@ -35,6 +37,15 @@ function findPhase(phaseId) {
 
 function findSession(phase, sessionId) {
   return phase.sessions.find((s) => s.id === sessionId) ?? phase.sessions[0];
+}
+
+function isSessionDone(session, weekKey) {
+  if (session.exercises.length === 0) return false;
+  return session.exercises.every((ex) => getWeekEntry(session.id, ex.id, weekKey).done);
+}
+
+function getTodaysSession(phase, weekKey) {
+  return phase.sessions.find((s) => !isSessionDone(s, weekKey)) ?? null;
 }
 
 function findExerciseAnywhere(exerciseId) {
@@ -96,6 +107,97 @@ function renderPhaseBar() {
 }
 
 // ---------------------------------------------------------------------------
+// Tab: Home
+// ---------------------------------------------------------------------------
+
+function renderHome() {
+  const phase = findPhase(getCurrentPhaseId());
+  const weekKey = isoWeekKey();
+  const todaysSession = getTodaysSession(phase, weekKey);
+  const doneCount = phase.sessions.filter((s) => isSessionDone(s, weekKey)).length;
+
+  const heroHTML = todaysSession
+    ? `
+      <div class="hero-eyebrow">Als Nächstes fällig</div>
+      <div class="hero-row">
+        <div class="hero-letter">${escapeHTML(todaysSession.name.replace("Einheit ", ""))}</div>
+        <div class="hero-body">
+          <div class="hero-session-name">${escapeHTML(todaysSession.name)}</div>
+          <div class="hero-meta">${todaysSession.exercises.length} Übungen &middot; ${escapeHTML(phase.name)}</div>
+        </div>
+      </div>
+      <button class="btn-hero" data-action="go-to-session" data-session="${todaysSession.id}">Jetzt starten</button>
+    `
+    : `
+      <div class="hero-eyebrow">Diese Woche</div>
+      <div class="hero-row">
+        <div class="hero-letter">&#10003;</div>
+        <div class="hero-body">
+          <div class="hero-session-name">Alles erledigt</div>
+          <div class="hero-meta">Alle Einheiten dieser Woche sind abgehakt. Stark!</div>
+        </div>
+      </div>
+      <button class="btn-hero" data-action="go-to-session" data-session="${phase.sessions[0].id}">Woche ansehen</button>
+    `;
+
+  const pillsHTML = phase.sessions
+    .map((s) => {
+      const done = isSessionDone(s, weekKey);
+      const isCurrent = todaysSession && s.id === todaysSession.id;
+      return `
+        <div class="week-pill ${done ? "is-done" : ""} ${isCurrent ? "is-current" : ""}">
+          <span class="pill-letter">${escapeHTML(s.name.replace("Einheit ", ""))}</span>
+          <span>${done ? "erledigt" : "offen"}</span>
+        </div>
+      `;
+    })
+    .join("");
+
+  const monthDots = buildMonthDots();
+
+  view.innerHTML = `
+    <div class="hero-card">
+      ${heroHTML}
+      <div class="week-pills">${pillsHTML}</div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-tile">
+        <div class="stat-tile-label">Aktuelle Phase</div>
+        <div class="stat-tile-value">${phase.name.replace("Phase ", "").split(":")[0]}</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile-label">Diese Woche</div>
+        <div class="stat-tile-value">${doneCount}<span class="unit">/${phase.sessions.length} Einheiten</span></div>
+      </div>
+    </div>
+    <div class="card dot-grid-card">
+      <div class="stat-tile-label">Aktivität &middot; ${escapeHTML(monthDots.label)}</div>
+      <div class="dot-grid">${monthDots.dotsHTML}</div>
+    </div>
+  `;
+}
+
+function buildMonthDots() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayStr = todayISO();
+  const history = getHistory();
+  const trainedDates = new Set(history.map((h) => h.date));
+
+  const label = now.toLocaleDateString("de-DE", { month: "long" });
+  let dotsHTML = "";
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const isActive = trainedDates.has(dateStr);
+    const isToday = dateStr === todayStr;
+    dotsHTML += `<span class="dot ${isActive ? "is-active" : ""} ${isToday ? "is-today" : ""}"></span>`;
+  }
+  return { label, dotsHTML };
+}
+
+// ---------------------------------------------------------------------------
 // Tab: Woche
 // ---------------------------------------------------------------------------
 
@@ -122,7 +224,7 @@ function renderWoche() {
         (ex) => getWeekEntry(session.id, ex.id, weekKey).done
       ).length;
       return `
-        <div class="card">
+        <div class="card" data-session-card="${session.id}">
           <div class="session-title">
             <h2>${escapeHTML(session.name)}</h2>
             <span class="session-progress">${doneCount}/${session.exercises.length} erledigt</span>
@@ -440,9 +542,20 @@ function editorExerciseHTML(ex) {
 
 function render() {
   renderPhaseBar();
-  if (activeTab === "woche") renderWoche();
+  if (activeTab === "home") renderHome();
+  else if (activeTab === "woche") renderWoche();
   else if (activeTab === "verlauf") renderVerlauf();
   else if (activeTab === "bearbeiten") renderBearbeiten();
+
+  if (activeTab === "woche" && highlightSessionId) {
+    const target = view.querySelector(`[data-session-card="${highlightSessionId}"]`);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      target.classList.add("is-highlighted");
+      setTimeout(() => target.classList.remove("is-highlighted"), 2000);
+    }
+    highlightSessionId = null;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -458,6 +571,15 @@ tabBar.addEventListener("click", (e) => {
 });
 
 view.addEventListener("click", (e) => {
+  const goToSessionBtn = e.target.closest('[data-action="go-to-session"]');
+  if (goToSessionBtn) {
+    highlightSessionId = goToSessionBtn.dataset.session;
+    activeTab = "woche";
+    tabBar.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.tab === "woche"));
+    render();
+    return;
+  }
+
   const historyLink = e.target.closest('[data-action="open-history"]');
   if (historyLink) {
     historyExerciseId = historyLink.dataset.exerciseId;
