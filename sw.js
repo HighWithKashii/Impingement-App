@@ -1,7 +1,7 @@
 // Service Worker: App-Shell wird gecacht (offline-fähig), wger-API/Bilder
 // werden Network-First mit Cache-Fallback behandelt.
 
-const CACHE_NAME = "schulter-reha-v2";
+const CACHE_NAME = "schulter-reha-v3";
 
 const APP_SHELL = [
   "./",

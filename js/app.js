@@ -154,6 +154,10 @@ function renderHome() {
     .join("");
 
   const monthDots = buildMonthDots();
+  const phaseIndex = plan.phases.findIndex((p) => p.id === phase.id) + 1;
+  const totalPhases = plan.phases.length;
+  const phasePct = phaseIndex / totalPhases;
+  const phaseShortName = phase.name.split(":")[1]?.trim() ?? phase.name;
 
   view.innerHTML = `
     <div class="hero-card">
@@ -161,9 +165,15 @@ function renderHome() {
       <div class="week-pills">${pillsHTML}</div>
     </div>
     <div class="stat-grid">
-      <div class="stat-tile">
+      <div class="stat-tile ring-tile">
         <div class="stat-tile-label">Aktuelle Phase</div>
-        <div class="stat-tile-value">${phase.name.replace("Phase ", "").split(":")[0]}</div>
+        <div class="ring" style="--pct:${phasePct}">
+          <div class="ring-inner">
+            <div class="n">${phaseIndex}</div>
+            <div class="of">VON ${totalPhases}</div>
+          </div>
+        </div>
+        <div class="phase-name">${escapeHTML(phaseShortName)}</div>
       </div>
       <div class="stat-tile">
         <div class="stat-tile-label">Diese Woche</div>
@@ -459,6 +469,8 @@ function renderBearbeiten() {
   const session = findSession(phase, editorSessionId) ?? phase.sessions[0];
   editorSessionId = session.id;
 
+  const sessionIndex = phase.sessions.findIndex((s) => s.id === session.id);
+
   view.innerHTML = `
     <div class="editor-select-row">
       <select id="editor-phase-select" class="phase-select">
@@ -466,11 +478,17 @@ function renderBearbeiten() {
           .map((p) => `<option value="${p.id}" ${p.id === phase.id ? "selected" : ""}>${escapeHTML(p.name)}</option>`)
           .join("")}
       </select>
-      <select id="editor-session-select" class="phase-select">
+      <div class="segmented" id="editor-session-segmented">
+        <div class="slide-indicator" style="transform: translateX(${sessionIndex * 100}%);"></div>
         ${phase.sessions
-          .map((s) => `<option value="${s.id}" ${s.id === session.id ? "selected" : ""}>${escapeHTML(s.name)}</option>`)
+          .map(
+            (s) =>
+              `<button class="${s.id === session.id ? "active" : ""}" data-session-id="${s.id}">${escapeHTML(
+                s.name.replace("Einheit ", "")
+              )}</button>`
+          )
           .join("")}
-      </select>
+      </div>
     </div>
 
     <div class="card">
@@ -494,8 +512,10 @@ function renderBearbeiten() {
     editorSessionId = findPhase(editorPhaseId).sessions[0].id;
     renderBearbeiten();
   });
-  document.getElementById("editor-session-select").addEventListener("change", (e) => {
-    editorSessionId = e.target.value;
+  document.getElementById("editor-session-segmented").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-session-id]");
+    if (!btn) return;
+    editorSessionId = btn.dataset.sessionId;
     renderBearbeiten();
   });
   document.getElementById("session-note-input").addEventListener("focusout", (e) => {

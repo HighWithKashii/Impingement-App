@@ -9,7 +9,7 @@ import math
 import os
 from PIL import Image, ImageDraw
 
-BG = (10, 10, 11, 255)  # --bg
+BG = (10, 10, 12, 255)  # --bg
 ACCENT = (255, 138, 31, 255)  # --accent
 ACCENT_STRONG = (255, 106, 0, 255)  # --accent-strong
 AMBER = (255, 214, 130, 255)  # lighter highlight tone
