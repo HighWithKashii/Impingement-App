@@ -1,22 +1,21 @@
 :root {
-  --bg: #0b1220;
-  --surface: #131c30;
-  --surface-alt: #1b2740;
-  --border: #2a3a5c;
-  --text: #e6ecf5;
-  --text-muted: #93a3bf;
-  --primary: #2dd4bf;
-  --primary-dark: #14b8a6;
-  --primary-bg: rgba(45, 212, 191, 0.12);
-  --amber: #f59e0b;
-  --amber-bg: rgba(245, 158, 11, 0.14);
-  --danger: #f87171;
-  --danger-bg: rgba(248, 113, 113, 0.12);
-  --chart-grid: #26365a;
-  --chart-line: #2dd4bf;
-  --chart-dot: #f59e0b;
-  --radius: 14px;
-  --radius-sm: 9px;
+  --bg: #0a0a0b;
+  --surface: #151517;
+  --surface-alt: #1e1e21;
+  --border: #2a2a2e;
+  --text: #f3f3f1;
+  --text-muted: #8b8b90;
+  --accent: #ff8a1f;
+  --accent-strong: #ff6a00;
+  --accent-bg: rgba(255, 138, 31, 0.14);
+  --accent-dim: rgba(255, 138, 31, 0.35);
+  --danger: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.12);
+  --chart-grid: #2a2a2e;
+  --chart-line: #ff8a1f;
+  --chart-dot: #ff6a00;
+  --radius: 18px;
+  --radius-sm: 12px;
   --font-head: "Syne", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
@@ -79,7 +78,7 @@ select {
 
 .app-title {
   font-size: 20px;
-  color: var(--primary);
+  color: var(--text);
 }
 
 .phase-bar {
@@ -133,7 +132,7 @@ select {
 
 .session-progress {
   font-size: 11px;
-  color: var(--primary);
+  color: var(--accent);
   font-family: var(--font-mono);
 }
 
@@ -158,7 +157,7 @@ select {
   cursor: pointer;
   padding: 12px 14px;
   font-size: 13px;
-  color: var(--primary);
+  color: var(--accent);
   list-style: none;
   display: flex;
   align-items: center;
@@ -192,10 +191,183 @@ select {
 .info-important {
   margin-top: 10px;
   padding: 8px 10px;
-  background: var(--amber-bg);
-  border-left: 3px solid var(--amber);
+  background: var(--danger-bg);
+  border-left: 3px solid var(--danger);
   border-radius: 6px;
   color: var(--text);
+}
+
+/* ---------- Home ---------- */
+
+.hero-card {
+  background: linear-gradient(155deg, var(--surface-alt), var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.hero-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.hero-letter {
+  font-family: var(--font-head);
+  font-size: 56px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.hero-body {
+  min-width: 0;
+}
+
+.hero-session-name {
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.hero-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.hero-done {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.btn-hero {
+  margin-top: 16px;
+  width: 100%;
+  background: var(--accent);
+  color: #14100a;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 13px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.week-pills {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.week-pill {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 6px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg);
+}
+
+.week-pill .pill-letter {
+  display: block;
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.week-pill.is-done {
+  border-color: var(--accent-dim);
+  background: var(--accent-bg);
+}
+
+.week-pill.is-done .pill-letter {
+  color: var(--accent);
+}
+
+.week-pill.is-current {
+  border-color: var(--accent);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.stat-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+.stat-tile-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.stat-tile-value {
+  font-family: var(--font-head);
+  font-size: 26px;
+  font-weight: 800;
+  margin-top: 6px;
+  color: var(--text);
+}
+
+.stat-tile-value .unit {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-left: 3px;
+}
+
+.dot-grid-card .stat-tile-label {
+  margin-bottom: 10px;
+}
+
+.dot-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.dot.is-active {
+  background: var(--accent);
+}
+
+.dot.is-today {
+  box-shadow: 0 0 0 2px var(--accent-dim);
 }
 
 /* ---------- Exercise item ---------- */
@@ -206,10 +378,15 @@ select {
   padding: 10px;
   margin-bottom: 10px;
   background: var(--surface-alt);
+  transition: box-shadow 0.3s ease;
 }
 
 .exercise.is-done {
-  border-color: var(--primary-dark);
+  border-color: var(--accent-dim);
+}
+
+.is-highlighted {
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .exercise-top {
@@ -267,7 +444,7 @@ select {
 
 .exercise-target {
   font-size: 12px;
-  color: var(--primary);
+  color: var(--accent);
   margin-top: 2px;
 }
 
@@ -286,9 +463,9 @@ select {
 }
 
 .done-toggle.is-done {
-  border-color: var(--primary);
-  background: var(--primary-bg);
-  color: var(--primary);
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
 .exercise-technique {
@@ -333,7 +510,7 @@ select {
 .field textarea:focus,
 .field select:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--accent);
 }
 
 /* ---------- Buttons ---------- */
@@ -350,9 +527,9 @@ select {
 }
 
 .btn-primary {
-  background: var(--primary-bg);
-  border-color: var(--primary-dark);
-  color: var(--primary);
+  background: var(--accent-bg);
+  border-color: var(--accent-dim);
+  color: var(--accent);
 }
 
 .btn-ghost {
@@ -417,7 +594,7 @@ select {
 }
 
 .tab-btn.is-active {
-  color: var(--primary);
+  color: var(--accent);
 }
 
 /* ---------- Bearbeiten (Plan-Editor) ---------- */
@@ -502,8 +679,8 @@ select {
   left: 50%;
   transform: translateX(-50%);
   background: var(--surface-alt);
-  border: 1px solid var(--primary-dark);
-  color: var(--primary);
+  border: 1px solid var(--accent-dim);
+  color: var(--accent);
   padding: 8px 16px;
   border-radius: 20px;
   font-size: 12px;
